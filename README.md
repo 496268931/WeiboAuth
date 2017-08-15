@@ -1,0 +1,1 @@
+需要安装tesseract，并把weibo2.traineddata 拷到tessdata目录中（/usr/local/share/tessdata）
