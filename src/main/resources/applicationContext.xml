@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+
+
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd" default-autowire="byName">
+
+    <description>Spring公共配置文件</description>
+    <context:annotation-config/>
+    <context:component-scan base-package="com.wiseweb"/>
+
+    <!-- 线程执行器配置，用于任务注册 -->
+    <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="100"/>
+        <property name="maxPoolSize" value="500"/>
+        <property name="queueCapacity" value="1000"/>
+    </bean>
+
+
+    <!--获取任务并执行-->
+    <bean id="bizObject_runJobs" class="com.wiseweb.Schedule"/>
+    <bean id="jobDetail_runJobs"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="bizObject_runJobs"/>
+        <property name="targetMethod" value="run"/>
+        <property name="concurrent">
+            <value>true</value>
+        </property>
+    </bean>
+    <bean id="cronTrigger_runJobs" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobDetail_runJobs"/>
+        <property name="cronExpression" value="* * * * * ?"/>
+    </bean>
+
+    <!-- 设置调度 -->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="cronTrigger_runJobs"/>
+
+            </list>
+        </property>
+        <property name="taskExecutor" ref="executor"/>
+    </bean>
+
+
+</beans>
